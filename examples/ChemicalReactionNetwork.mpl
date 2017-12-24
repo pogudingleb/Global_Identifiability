@@ -1,4 +1,4 @@
-read("GlobalIdentifiability.mpl");
+read "../GlobalIdentifiability.mpl";
 
 sigma := table([
   mu = [k1, k2, k3, k4, k5, k6],
