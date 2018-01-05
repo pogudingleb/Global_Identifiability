@@ -60,7 +60,7 @@ with(Grid):
     m := nops(sigma[y_vars]):
     s := nops(sigma[mu]) + n:
     all_params := [op(sigma[mu]), op(map(x -> MakeDerivative(x, 0), sigma[x_vars] ))]:
-    all_vars := [ op(sigma[x_vars]), op(sigma[y_vars]) ]:
+    all_vars := [ op(sigma[x_vars]), op(sigma[y_vars]), op(sigma[u_vars]) ]:
 
     roll := rand(0 .. bound):
     theta_hat := map(p -> p = roll(), all_params): 
@@ -113,7 +113,7 @@ with(Grid):
     m := nops(sigma[y_vars]):
     s := nops(sigma[mu]) + n:
     all_params := [op(sigma[mu]), op(map(x -> MakeDerivative(x, 0), sigma[x_vars] ))]:
-    all_vars := [ op(sigma[x_vars]), op(sigma[y_vars]) ]:
+    all_vars := [ op(sigma[x_vars]), op(sigma[y_vars]), op(sigma[u_vars]) ]:
 
     eqs := [op(sigma[x_eqs]), op(sigma[y_eqs])]:
     Q := foldl( (f, g) -> lcm(f, g), op( map(f -> denom(rhs(f)), eqs) )):
@@ -176,7 +176,7 @@ with(Grid):
     for i from 1 to m do
       beta[i] := beta[i] + 1:
     end do:
-
+ 
     print("Beta ", beta);
     print("Alpha ", alpha);
     deg_variety := foldl(`*`, op( map(e -> degree(e), Et) )):
@@ -221,6 +221,5 @@ with(Grid):
       print("No such method"):
     end if:
     theta_g;
-
   end proc:
 
