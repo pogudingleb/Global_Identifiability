@@ -107,7 +107,7 @@ with(Grid):
 
   GlobalIdentifiability := proc(sigma, theta_l, p := 0.99, method := 1) 
     local i, j, n, m, s, all_params, all_vars, eqs, Q, X, Y, poly, d0, D1, sample, all_subs,
-    alpha, beta, Et, x_theta_vars, was_added, eqs_i, JacX, vars, vars_to_add, ord_var, var_index, 
+    alpha, beta, Et, x_theta_vars, prolongation_possible, eqs_i, JacX, vars, vars_to_add, ord_var, var_index, 
     deg_variety, D2, y_hat, u_hat, theta_hat, Et_hat, Q_hat, theta_g, gb, v:
     n := nops(sigma[x_vars]):
     m := nops(sigma[y_vars]):
@@ -119,12 +119,12 @@ with(Grid):
     Q := foldl( (f, g) -> lcm(f, g), op( map(f -> denom(rhs(f)), eqs) )):
     X := []:
     for i from 1 to n do
-      poly := simplify( Q * (lhs(sigma[x_eqs][i]) - rhs(sigma[x_eqs][i])) ):
+      poly := numer(lhs(sigma[x_eqs][i]) - rhs(sigma[x_eqs][i])):
       X := [op(X), map( j -> Differentiate(poly, all_vars, s, j), [seq(j, j = 0..s)] )]:
     end do:
     Y := []:
     for i from 1 to m do
-      poly := simplify( Q * (lhs(sigma[y_eqs][i]) - rhs(sigma[y_eqs][i])) ):
+      poly := numer(lhs(sigma[y_eqs][i]) - rhs(sigma[y_eqs][i])):
       Y := [op(Y), map( j -> Differentiate(poly, all_vars, s, j), [seq(j, j = 0..s)] )]:
     end do:
 
@@ -143,33 +143,36 @@ with(Grid):
     beta := [seq(0, i = 1..m)]:
     Et := [];
     x_theta_vars := all_params:
-    was_added := 1:
-    while was_added = 1 do
-      was_added := 0:
+    prolongation_possible := [seq(1, i = 1..m)]:
+    while add(prolongation_possible) > 0 do
+      print("Beta now", beta);
       for i from 1 to m do
-        eqs_i := [op(Et), Y[i][beta[i] + 1]]:
-        JacX := subs(all_subs, Jacobian(eqs_i, x_theta_vars = subs(all_subs, x_theta_vars)));
-        if Rank(JacX) = nops(eqs_i) then
-          was_added := 1:
-          Et := [op(Et), Y[i][beta[i] + 1]]:
-          beta[i] := beta[i] + 1:
-          for j from 1 to s + 1 do
-            vars := {};
-            for poly in [op(Et), op( map(i -> Y[i][beta[i] + 1], 1..m) )] do
-              vars := vars union { op(GetVars(poly, sigma[x_vars], s + 1)) }:
+        if prolongation_possible[i] = 1 then
+          eqs_i := [op(Et), Y[i][beta[i] + 1]]:
+          JacX := subs(all_subs, Jacobian(eqs_i, x_theta_vars = subs(all_subs, x_theta_vars)));
+          if Rank(JacX) = nops(eqs_i) then
+            Et := [op(Et), Y[i][beta[i] + 1]]:
+            beta[i] := beta[i] + 1:
+            for j from 1 to s + 1 do
+              vars := {};
+              for poly in [op(Et), op( map(i -> Y[i][beta[i] + 1], 1..m) )] do
+                vars := vars union { op(GetVars(poly, sigma[x_vars], s + 1)) }:
+              end do:
+              vars_to_add := { op(remove(v -> evalb(v in x_theta_vars), vars)) };
+              for v in vars_to_add do
+                x_theta_vars := [op(x_theta_vars), v];
+                ord_var := GetOrderVar(v, all_vars, s + 1);
+                var_index := ListTools[Search](ord_var[2], sigma[x_vars]):
+                poly := X[ var_index ][ ord_var[1] ]:
+                Et := [op(Et), poly]:
+                alpha[ var_index ] := max(alpha[ var_index ], ord_var[1] + 1):
+              end do:
             end do:
-            vars_to_add := { op(remove(v -> evalb(v in x_theta_vars), vars)) };
-            for v in vars_to_add do
-              x_theta_vars := [op(x_theta_vars), v];
-              ord_var := GetOrderVar(v, all_vars, s + 1);
-              var_index := ListTools[Search](ord_var[2], sigma[x_vars]):
-              poly := X[ var_index ][ ord_var[1] ]:
-              Et := [op(Et), poly]:
-              alpha[ var_index ] := max(alpha[ var_index ], ord_var[1] + 1):
-            end do:
-          end do:
-        end if:
-      end do: 
+          else
+            prolongation_possible[i] := 0;
+          end if:
+        end if: 
+      end do:
     end do:
 
     Et := [op(Et), op( map(i -> Y[i][beta[i] + 1], 1..m) )]:
