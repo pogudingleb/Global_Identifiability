@@ -53,7 +53,7 @@ with(Grid):
 
   ##########################################
 
-  SamplePoint := proc(bound, sigma)
+  SamplePoint := proc(bound, sigma, X_eq, Y_eq)
     local n, m, s, all_params, all_vars, theta_hat, u_variables, u_hat, x_hat, y_hat, eq, eq_num, eq_denom, 
     v, poly, i, j, all_subs, roll;
     n := nops(sigma[x_vars]):
@@ -70,28 +70,8 @@ with(Grid):
     end do:
     u_hat := map(p -> p = roll(), u_variables) :   
 
-    x_hat := [];
-    for i from 1 to n do:
-      eq := sigma[x_eqs][i]:
-      eq_num := numer(lhs(eq) - rhs(eq));
-      eq_denom := denom(lhs(eq) - rhs(eq));
-      for j from 0 to s do
-        v := Differentiate(lhs(eq), all_vars, s, j);
-        poly := v * eq_denom - Differentiate( eq_num, all_vars, s, j );
-        x_hat := [op(x_hat), v = poly / eq_denom];
-      end do:
-    end do:
-    y_hat := [];
-    for i from 1 to m do:
-      eq := sigma[y_eqs][i]:
-      eq_num := numer(lhs(eq) - rhs(eq));
-      eq_denom := denom(lhs(eq) - rhs(eq));
-      for j from 0 to s do
-        v := Differentiate(lhs(eq), all_vars, s, j);
-        poly := v * eq_denom - Differentiate( eq_num, all_vars, s, j );
-        y_hat := [op(y_hat), v = poly / eq_denom];
-      end do:
-    end do:
+    x_hat := X_eq;
+    y_hat := Y_eq;
     all_subs := [op(theta_hat), op(u_hat)]:
     for i from 1 to s + 1 do
       x_hat := map(e -> lhs(e) = subs(all_subs, rhs(e)), x_hat):
@@ -108,7 +88,7 @@ with(Grid):
   GlobalIdentifiability := proc(sigma, theta_l, p := 0.99, method := 1) 
     local i, j, n, m, s, all_params, all_vars, eqs, Q, X, Y, poly, d0, D1, sample, all_subs,
     alpha, beta, Et, x_theta_vars, prolongation_possible, eqs_i, JacX, vars, vars_to_add, ord_var, var_index, 
-    deg_variety, D2, y_hat, u_hat, theta_hat, Et_hat, Q_hat, theta_g, gb, v:
+    deg_variety, D2, y_hat, u_hat, theta_hat, Et_hat, Q_hat, theta_g, gb, v, X_eq, Y_eq, poly_d, separant, leader:
     n := nops(sigma[x_vars]):
     m := nops(sigma[y_vars]):
     s := nops(sigma[mu]) + n:
@@ -118,27 +98,46 @@ with(Grid):
     eqs := [op(sigma[x_eqs]), op(sigma[y_eqs])]:
     Q := foldl( (f, g) -> lcm(f, g), op( map(f -> denom(rhs(f)), eqs) )):
     X := []:
+    X_eq := []:
     for i from 1 to n do
+      X := [op(X), []]:
       poly := numer(lhs(sigma[x_eqs][i]) - rhs(sigma[x_eqs][i])):
-      X := [op(X), map( j -> Differentiate(poly, all_vars, s, j), [seq(j, j = 0..s)] )]:
+      for j from 0 to s do
+        poly_d := Differentiate(poly, all_vars, s, j):
+        leader := MakeDerivative(sigma[x_vars][i], j + 1):
+        separant := diff(poly_d, leader):
+        X[i] := [op(X[i]), poly_d]:
+        X_eq := [op(X_eq), leader = -(poly_d - separant * leader) / separant]:
+      end do:
     end do:
+    print(X_eq);
     Y := []:
+    Y_eq := []:
     for i from 1 to m do
+      Y := [op(Y), []]:
       poly := numer(lhs(sigma[y_eqs][i]) - rhs(sigma[y_eqs][i])):
-      Y := [op(Y), map( j -> Differentiate(poly, all_vars, s, j), [seq(j, j = 0..s)] )]:
+      for j from 0 to s do
+        poly_d := Differentiate(poly, all_vars, s, j):
+        leader := MakeDerivative(sigma[y_vars][i], j):
+        separant := diff(poly_d, leader):
+        Y[i] := [op(Y[i]), poly_d]:
+        Y_eq := [op(Y_eq), leader = -(poly_d - separant * leader) / separant]:
+      end do:
     end do:
+    print(Y_eq);
 
     d0 := max(op( map(f -> degree( simplify(Q * rhs(f)) ), eqs) ), degree(Q)):
  
     D1 := floor( 2 * d0 * s * (n + 1) * (1 + 2 * d0 * s) / (1 - p) ):
     print("Bound D_1  ", D1);
-    sample := SamplePoint(D1, sigma):
+    sample := SamplePoint(D1, sigma, X_eq, Y_eq):
     all_subs := sample[4]:
     while subs(all_subs, Q) = 0 do
-      sample := SamplePoint(D1, sigma):
+      sample := SamplePoint(D1, sigma, X_eq, Y_eq):
       all_subs := sample[4]:
     end do:
-    
+    print(all_subs);   
+ 
     alpha := [seq(1, i = 1..n)]:
     beta := [seq(0, i = 1..m)]:
     Et := [];
@@ -185,9 +184,9 @@ with(Grid):
     deg_variety := foldl(`*`, op( map(e -> degree(e), Et) )):
     D2 := floor( 6 * nops(theta_l) * deg_variety * (1 + 2 * d0 * max(op(beta))) / (1 - p) ):
     print("Bound D_2 ", D2):
-    sample := SamplePoint(D2, sigma):
+    sample := SamplePoint(D2, sigma, X_eq, Y_eq):
     while subs(sample[4], Q) = 0 do
-      sample := SamplePoint(D2, sigma):
+      sample := SamplePoint(D2, sigma, X_eq, Y_eq):
     end do:    
     y_hat := sample[1]:
     u_hat := sample[2]:
@@ -203,6 +202,7 @@ with(Grid):
     theta_g := []:
     if method = 1 then
       for i from 1 to nops(theta_l) do
+        print([op(Et_hat), z * Q_hat - 1, (theta_l[i] - subs(theta_hat, theta_l[i])) * w - 1]);
         Grid[Run](i, Groebner[Basis], [ [op(Et_hat), z * Q_hat - 1, (theta_l[i] - subs(theta_hat, theta_l[i])) * w - 1], tdeg(op(vars), z, w) ]):
       end do:
       Grid[Wait]():
