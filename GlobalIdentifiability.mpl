@@ -88,7 +88,7 @@ with(Grid):
   GlobalIdentifiability := proc(sigma, theta_l, p := 0.99, method := 1) 
     local i, j, n, m, s, all_params, all_vars, eqs, Q, X, Y, poly, d0, D1, sample, all_subs,
     alpha, beta, Et, x_theta_vars, prolongation_possible, eqs_i, JacX, vars, vars_to_add, ord_var, var_index, 
-    deg_variety, D2, y_hat, u_hat, theta_hat, Et_hat, Q_hat, theta_g, gb, v, X_eq, Y_eq, poly_d, separant, leader:
+    deg_variety, D2, y_hat, u_hat, theta_hat, Et_hat, Q_hat, theta_g, gb, v, X_eq, Y_eq, poly_d, separant, leader,vars_local:
     n := nops(sigma[x_vars]):
     m := nops(sigma[y_vars]):
     s := nops(sigma[mu]) + n:
@@ -110,7 +110,6 @@ with(Grid):
         X_eq := [op(X_eq), leader = -(poly_d - separant * leader) / separant]:
       end do:
     end do:
-    print(X_eq);
     Y := []:
     Y_eq := []:
     for i from 1 to m do
@@ -124,7 +123,6 @@ with(Grid):
         Y_eq := [op(Y_eq), leader = -(poly_d - separant * leader) / separant]:
       end do:
     end do:
-    print(Y_eq);
 
     d0 := max(op( map(f -> degree( simplify(Q * rhs(f)) ), eqs) ), degree(Q)):
  
@@ -136,7 +134,6 @@ with(Grid):
       sample := SamplePoint(D1, sigma, X_eq, Y_eq):
       all_subs := sample[4]:
     end do:
-    print(all_subs);   
  
     alpha := [seq(1, i = 1..n)]:
     beta := [seq(0, i = 1..m)]:
@@ -144,11 +141,15 @@ with(Grid):
     x_theta_vars := all_params:
     prolongation_possible := [seq(1, i = 1..m)]:
     while add(prolongation_possible) > 0 do
-      print("Beta now", beta);
       for i from 1 to m do
         if prolongation_possible[i] = 1 then
           eqs_i := [op(Et), Y[i][beta[i] + 1]]:
           JacX := subs(all_subs, Jacobian(eqs_i, x_theta_vars = subs(all_subs, x_theta_vars)));
+          #JacX := Jacobian(eqs_i, x_theta_vars = subs(all_subs, x_theta_vars));
+          #print(eqs_i);
+          #print(x_theta_vars);
+          #print(JacX[1,1], JacX);
+          #print(LinearAlgebra[Rank](JacX));
           if Rank(JacX) = nops(eqs_i) then
             Et := [op(Et), Y[i][beta[i] + 1]]:
             beta[i] := beta[i] + 1:
@@ -172,6 +173,7 @@ with(Grid):
           end if:
         end if: 
       end do:
+      print("Beta now", beta);
     end do:
 
     Et := [op(Et), op( map(i -> Y[i][beta[i] + 1], 1..m) )]:
@@ -201,15 +203,31 @@ with(Grid):
 
     theta_g := []:
     if method = 1 then
-      for i from 1 to nops(theta_l) do
-        print([op(Et_hat), z * Q_hat - 1, (theta_l[i] - subs(theta_hat, theta_l[i])) * w - 1]);
-        Grid[Run](i, Groebner[Basis], [ [op(Et_hat), z * Q_hat - 1, (theta_l[i] - subs(theta_hat, theta_l[i])) * w - 1], tdeg(op(vars), z, w) ]):
-      end do:
-      Grid[Wait]():
+      Grid[Setup]("local", numnodes = 5):
+      gb := Grid[Seq](
+        Groebner[Basis](
+          [op(Et_hat), z * Q_hat - 1, (theta_l[i] - subs(theta_hat, theta_l[i])) * w - 1],
+          tdeg(op(vars), z, w)
+        ),
+        i = 1..nops(theta_l)
+      ):
+      #for i from 1 to nops(theta_l) do
+        #vars_local := subsop(ListTools[Search](theta_l[i], vars) = NULL, vars);
+        #vars_local := [op(vars_local), z, w];
+      #  Grid[Run](
+      #    i, 
+      #    Groebner[Basis], 
+      #    [ 
+      #      [op(Et_hat), z * Q_hat - 1, (theta_l[i] - subs(theta_hat, theta_l[i])) * w - 1], 
+      #      tdeg(op(vars), z, w)
+      #    ] 
+      #  ):
+      #end do:
+      #Grid[Wait]():
 
       for i from 1 to nops(theta_l) do
-        gb := Grid[GetLastResult](i):
-        if gb = [1] then
+        #gb := Grid[GetLastResult](i):
+        if gb[i] = [1] then
           theta_g := [op(theta_g), theta_l[i]]:
         end if:
       end do:     
