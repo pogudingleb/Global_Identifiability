@@ -1,7 +1,3 @@
-with(LinearAlgebra):
-with(VectorCalculus):
-with(Grid):
-
   MakeDerivative := proc(var_name, der_order):
     cat(var_name, der_order):
   end proc:
@@ -144,13 +140,13 @@ with(Grid):
       for i from 1 to m do
         if prolongation_possible[i] = 1 then
           eqs_i := [op(Et), Y[i][beta[i] + 1]]:
-          JacX := subs(all_subs, Jacobian(eqs_i, x_theta_vars = subs(all_subs, x_theta_vars)));
+          JacX := subs(all_subs, VectorCalculus[Jacobian](eqs_i, x_theta_vars = subs(all_subs, x_theta_vars)));
           #JacX := Jacobian(eqs_i, x_theta_vars = subs(all_subs, x_theta_vars));
           #print(eqs_i);
           #print(x_theta_vars);
           #print(JacX[1,1], JacX);
           #print(LinearAlgebra[Rank](JacX));
-          if Rank(JacX) = nops(eqs_i) then
+          if LinearAlgebra[Rank](JacX) = nops(eqs_i) then
             Et := [op(Et), Y[i][beta[i] + 1]]:
             beta[i] := beta[i] + 1:
             for j from 1 to s + 1 do
@@ -204,30 +200,16 @@ with(Grid):
     theta_g := []:
     if method = 1 then
       Grid[Setup]("local", numnodes = 5):
-      infolevel[Grid:-Seq] := 3:
       gb := Grid[Seq](
-        'Groebner[Basis](
+        eval('Groebner[Basis](
           [op(Et_hat), z * Q_hat - 1, (theta_l[i] - subs(theta_hat, theta_l[i])) * w - 1],
           tdeg(op(vars), z, w)
-        ), print(theta_l[i])',
+        ), print(theta_l[i])'),
         i = 1..nops(theta_l)
       ):
-      #for i from 1 to nops(theta_l) do
-        #vars_local := subsop(ListTools[Search](theta_l[i], vars) = NULL, vars);
-        #vars_local := [op(vars_local), z, w];
-      #  Grid[Run](
-      #    i, 
-      #    Groebner[Basis], 
-      #    [ 
-      #      [op(Et_hat), z * Q_hat - 1, (theta_l[i] - subs(theta_hat, theta_l[i])) * w - 1], 
-      #      tdeg(op(vars), z, w)
-      #    ] 
-      #  ):
-      #end do:
-      #Grid[Wait]():
 
       for i from 1 to nops(theta_l) do
-        #gb := Grid[GetLastResult](i):
+        print("Groebner basis for ", theta_l[i], gb[i]);
         if gb[i] = [1] then
           theta_g := [op(theta_g), theta_l[i]]:
         end if:
