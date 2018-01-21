@@ -201,10 +201,10 @@
     if method = 1 then
       Grid[Setup]("local", numnodes = 5):
       gb := Grid[Seq](
-        eval('Groebner[Basis](
+        Groebner[Basis](
           [op(Et_hat), z * Q_hat - 1, (theta_l[i] - subs(theta_hat, theta_l[i])) * w - 1],
           tdeg(op(vars), z, w)
-        ), print(theta_l[i])'),
+        ),
         i = 1..nops(theta_l)
       ):
 
