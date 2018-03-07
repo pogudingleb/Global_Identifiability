@@ -82,7 +82,7 @@
   ##########################################
 
   GlobalIdentifiability := proc(sigma, theta_l, p := 0.99, method := 1) 
-    local i, j, n, m, s, all_params, all_vars, eqs, Q, X, Y, poly, d0, D1, sample, all_subs,
+    local i, j, k, n, m, s, all_params, all_vars, eqs, Q, X, Y, poly, d0, D1, sample, all_subs,
     alpha, beta, Et, x_theta_vars, prolongation_possible, eqs_i, JacX, vars, vars_to_add, ord_var, var_index, 
     deg_variety, D2, y_hat, u_hat, theta_hat, Et_hat, Q_hat, theta_g, gb, v, X_eq, Y_eq, poly_d, separant, leader,vars_local:
     n := nops(sigma[x_vars]):
@@ -121,7 +121,7 @@
     end do:
 
     d0 := max(op( map(f -> degree( simplify(Q * rhs(f)) ), eqs) ), degree(Q)):
- 
+
     D1 := floor( 2 * d0 * s * (n + 1) * (1 + 2 * d0 * s) / (1 - p) ):
     print("Bound D_1  ", D1);
     sample := SamplePoint(D1, sigma, X_eq, Y_eq):
@@ -141,17 +141,12 @@
         if prolongation_possible[i] = 1 then
           eqs_i := [op(Et), Y[i][beta[i] + 1]]:
           JacX := subs(all_subs, VectorCalculus[Jacobian](eqs_i, x_theta_vars = subs(all_subs, x_theta_vars)));
-          #JacX := Jacobian(eqs_i, x_theta_vars = subs(all_subs, x_theta_vars));
-          #print(eqs_i);
-          #print(x_theta_vars);
-          #print(JacX[1,1], JacX);
-          #print(LinearAlgebra[Rank](JacX));
           if LinearAlgebra[Rank](JacX) = nops(eqs_i) then
             Et := [op(Et), Y[i][beta[i] + 1]]:
             beta[i] := beta[i] + 1:
             for j from 1 to s + 1 do
               vars := {};
-              for poly in [op(Et), op( map(i -> Y[i][beta[i] + 1], 1..m) )] do
+              for poly in [op(Et), seq(Y[k][beta[k] + 1], k=1..m)] do
                 vars := vars union { op(GetVars(poly, sigma[x_vars], s + 1)) }:
               end do:
               vars_to_add := { op(remove(v -> evalb(v in x_theta_vars), vars)) };
@@ -165,6 +160,8 @@
               end do:
             end do:
           else
+            print(eqs_i);
+            print(x_theta_vars);
             prolongation_possible[i] := 0;
           end if:
         end if: 
@@ -175,6 +172,21 @@
     Et := [op(Et), op( map(i -> Y[i][beta[i] + 1], 1..m) )]:
     for i from 1 to m do
       beta[i] := beta[i] + 1:
+    end do:
+
+    for i from 1 to m do
+      for j from beta[i] + 1 to nops(Y[i]) do
+        to_add := true:
+        for v in GetVars(Y[i][j], sigma[x_vars], s + 1) do
+          if not (v in vars) then
+            to_add := false:
+          end if:
+        end do:
+        if to_add = true then
+          beta[i] := beta[i] + 1:
+          Et := [op(Et), Y[i][j]]:
+        end if:
+      end do:
     end do:
  
     print("Beta ", beta);
@@ -199,7 +211,7 @@
 
     theta_g := []:
     if method = 1 then
-      Grid[Setup]("local", numnodes = 5):
+      Grid[Setup]("local", numnodes = 8):
       gb := Grid[Seq](
         Groebner[Basis](
           [op(Et_hat), z * Q_hat - 1, (theta_l[i] - subs(theta_hat, theta_l[i])) * w - 1],

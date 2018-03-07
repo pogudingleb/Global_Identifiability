@@ -13,5 +13,5 @@ sigma := table([
   ]
 ]);
 
-theta_g := GlobalIdentifiability(sigma, [mu1, mu2, x0], 0.9, 2);
+theta_g := GlobalIdentifiability(sigma, [mu1, mu2, x0], 0.9, 1);
 print(theta_g);
