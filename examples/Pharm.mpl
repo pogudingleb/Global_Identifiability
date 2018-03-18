@@ -18,6 +18,6 @@ sigma := table([
   ]
 ]);
 
-p := GlobalIdentifiability(sigma, [op(sigma[mu]), x1_0, x2_0, x3_0, x4_0], 0.99, 1);
+p := GlobalIdentifiability(sigma, [op(sigma[mu]), x1_0, x2_0, x3_0, x4_0], 0.99);
 
 print(p);

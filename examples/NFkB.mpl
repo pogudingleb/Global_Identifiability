@@ -1,4 +1,4 @@
-# Example 9 in the paper
+# Example 11 in the paper
 
 read "../GlobalIdentifiability.mpl";
 
@@ -24,7 +24,7 @@ known_data := [
 sigma := table([
   mu = [t1, t2, c_3a, c_4a, c5, k1, k2, k3, k_prod, k_deg, i1, e_2a, i_1a],
   x_vars = [x1_, x2_, x3_, x4_, x5_, x6_, x7_, x8_, x9_, x10_, x11_, x12_, x13_, x14_, x15_],
-  y_vars = [y1_, y2_, y3_, y4_, y5_, y6_],
+  y_vars = [y1_, y2_, y3_, y4_, y6_, y5_],
   u_vars = [u],
   x_eqs = subs(known_data, [
     x1_1 = k_prod - k_deg * x1_0 - k1 * x1_0 * u0,
@@ -48,12 +48,12 @@ sigma := table([
     y2_0 = x10_0 + x13_0,
     y3_0 = x9_0,
     y4_0 = x1_0 + x2_0 + x3_0,
-    y5_0 = x7_0,
-    y6_0 = x12_0
+    y6_0 = x12_0,
+    y5_0 = x7_0
   ]
 ]);
 
-theta_g := GlobalIdentifiability(sigma, [op(sigma[mu]), x1_0, x2_0, x3_0, x4_0, x5_0, x6_0, x7_0, x8_0, x9_0, x10_0, x11_0, x12_0, x13_0, x14_0], 0.99, 1);
+theta_g := GlobalIdentifiability(sigma, [op(sigma[mu]), x1_0, x2_0, x3_0, x4_0, x5_0, x6_0, x7_0, x8_0, x9_0, x10_0, x11_0, x12_0, x13_0, x14_0], 0.99);
 
 print(theta_g);
 

@@ -21,5 +21,5 @@ sigma := table([
 ]);
 
 # only beta, s, d, x1_0, x4_0 are locally identifiable
-theta_g := GlobalIdentifiability(sigma, [beta, s, d, x1_0, x4_0], 0.99, 1);
+theta_g := GlobalIdentifiability(sigma, [beta, s, d, x1_0, x4_0], 0.99);
 print(theta_g);

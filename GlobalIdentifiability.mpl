@@ -169,11 +169,6 @@
       print("Beta now", beta);
     end do:
 
-    Et := [op(Et), op( map(i -> Y[i][beta[i] + 1], 1..m) )]:
-    for i from 1 to m do
-      beta[i] := beta[i] + 1:
-    end do:
-
     for i from 1 to m do
       for j from beta[i] + 1 to nops(Y[i]) do
         to_add := true:
@@ -211,12 +206,19 @@
 
     theta_g := []:
     if method = 1 then
-      Grid[Setup]("local", numnodes = 8):
+      at_node := proc(var, args_node)
+        local gb_loc;
+        gb_loc := Groebner[Basis](op(args_node)):
+        print(var, gb_loc);
+        gb_loc;
+      end proc:
+      Grid[Setup]("local", numnodes = 5):
+      Grid[Set](at_node):
       gb := Grid[Seq](
-        Groebner[Basis](
+        at_node(theta_l[i], [
           [op(Et_hat), z * Q_hat - 1, (theta_l[i] - subs(theta_hat, theta_l[i])) * w - 1],
           tdeg(op(vars), z, w)
-        ),
+        ]),
         i = 1..nops(theta_l)
       ):
 
