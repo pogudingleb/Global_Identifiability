@@ -1,5 +1,3 @@
-# Example 11 in the paper
-
 read "../GlobalIdentifiability.mpl";
 
 known_data := [
