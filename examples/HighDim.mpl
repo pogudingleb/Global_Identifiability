@@ -1,3 +1,7 @@
+# Example 11 in the paper, taken from 
+# Saccomani, M., Audoly, S., Bellu, G., D'Angio, L.
+# Examples of testing global identifiability of biological and biomedical models with the daisy software
+# Section 6
 read "../GlobalIdentifiability.mpl";
 
 sigma := table([

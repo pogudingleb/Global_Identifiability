@@ -1,5 +1,6 @@
-# Example 10 in the paper
-
+# Example 13 in the paper, taken from
+# Demignot, S., D., D., 
+# Effect of prosthetic sugar groups on the pharmacokinetics of glucose-oxidase
 read("../GlobalIdentifiability.mpl");
 
 sigma := table([

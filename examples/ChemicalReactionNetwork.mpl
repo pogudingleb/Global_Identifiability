@@ -1,3 +1,8 @@
+# Example 9 in the paper
+# Taken from 
+# Conradi, C., Shiu, A.,
+# Dynamics of post-translational modification systems: recent progress and future directions
+# Eq. 3.4
 read "../GlobalIdentifiability.mpl";
 
 sigma := table([

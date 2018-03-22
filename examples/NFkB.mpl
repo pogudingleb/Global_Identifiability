@@ -1,5 +1,10 @@
+# Example 12 from the paper, taken from
+# Balsa-Canto, E., Alonso, A. A., Banga, J. R., 
+# An iterative identification procedure for dynamic modeling of biochemical networks
 read "../GlobalIdentifiability.mpl";
 
+# Data from Table 1 in 
+# An iterative identification procedure for dynamic modeling of biochemical networks
 known_data := [
   a1 = 1 / 2,
   a2 = 1 / 5,

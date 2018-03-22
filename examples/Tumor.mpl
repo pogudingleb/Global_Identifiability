@@ -27,5 +27,5 @@ sigma := table([
 ]);
 
 # x3_0 and x4_0 are not locally identifiable
-theta_g := GlobalIdentifiability(sigma, [op(sigma[mu]), x1_0, x2_0, x5_0], 0.99, 1);
+theta_g := GlobalIdentifiability(sigma, [op(sigma[mu]), x1_0, x2_0, x5_0], 0.99);
 print(theta_g);

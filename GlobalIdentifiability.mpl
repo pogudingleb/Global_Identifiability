@@ -81,7 +81,7 @@
 
   ##########################################
 
-  GlobalIdentifiability := proc(sigma, theta_l, p := 0.99, method := 1) 
+  GlobalIdentifiability := proc(sigma, theta_l, p := 0.99, method := 1, num_nodes := 5) 
     local i, j, k, n, m, s, all_params, all_vars, eqs, Q, X, Y, poly, d0, D1, sample, all_subs,
     alpha, beta, Et, x_theta_vars, prolongation_possible, eqs_i, JacX, vars, vars_to_add, ord_var, var_index, 
     deg_variety, D2, y_hat, u_hat, theta_hat, Et_hat, Q_hat, theta_g, gb, v, X_eq, Y_eq, poly_d, separant, leader,vars_local:
@@ -160,8 +160,6 @@
               end do:
             end do:
           else
-            print(eqs_i);
-            print(x_theta_vars);
             prolongation_possible[i] := 0;
           end if:
         end if: 
@@ -202,6 +200,7 @@
     for poly in Et_hat do
       vars := vars union { op(GetVars(poly, sigma[x_vars], s + 1)) }:
     end do:
+    print("We finally have ", nops(Et_hat), "equations in ", nops(vars), "variables");
     Q_hat := subs(u_hat, Q):
 
     theta_g := []:
@@ -209,10 +208,10 @@
       at_node := proc(var, args_node)
         local gb_loc;
         gb_loc := Groebner[Basis](op(args_node)):
-        print(var, gb_loc);
+        print("Groebner basis for ", var, " is ", gb_loc);
         gb_loc;
       end proc:
-      Grid[Setup]("local", numnodes = 5):
+      Grid[Setup]("local", numnodes = num_nodes):
       Grid[Set](at_node):
       gb := Grid[Seq](
         at_node(theta_l[i], [
@@ -223,7 +222,6 @@
       ):
 
       for i from 1 to nops(theta_l) do
-        print("Groebner basis for ", theta_l[i], gb[i]);
         if gb[i] = [1] then
           theta_g := [op(theta_g), theta_l[i]]:
         end if:

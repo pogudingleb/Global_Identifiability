@@ -1,3 +1,7 @@
+# Example 10 in the paper, taken from
+# Lee, E. C., Kelly, M. R., Ochocki, B. M., Akinwumi, S. M., Hamre, K. E., Tien, J. H., Eisenberg, M. C.,
+# Model distinguishability and inference robustness in mechanisms of cholera transmission and loss of immunity
+# Eq. (3)
 read "../GlobalIdentifiability.mpl";
 
 sigma := table([
@@ -17,5 +21,5 @@ sigma := table([
   ]
 ]);
 
-theta_g := GlobalIdentifiability(sigma, [op(sigma[mu]), s0, i0, w0, r0], 0.99, 1);
+theta_g := GlobalIdentifiability(sigma, [op(sigma[mu]), s0, i0, w0, r0], 0.99);
 print(theta_g);
