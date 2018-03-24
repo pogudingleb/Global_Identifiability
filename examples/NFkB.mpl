@@ -1,4 +1,4 @@
-# Example 12 from the paper, taken from
+# Example 11 from the paper, taken from
 # Balsa-Canto, E., Alonso, A. A., Banga, J. R., 
 # An iterative identification procedure for dynamic modeling of biochemical networks
 read "../GlobalIdentifiability.mpl";
