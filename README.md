@@ -28,3 +28,4 @@ Examples of usage can be found in the **examples/** folder
   * **ChemicalReactionNetwork.mpl** contains the code for Example 6
   * **Cholera.mpl** contains the code for Example 7
 
+This project is partially supprted by NSF grant CCF-1563942.
