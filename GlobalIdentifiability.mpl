@@ -165,18 +165,27 @@ GlobalIdentifiability := proc(sigma, theta_l, p := 0.99, method := 1, num_nodes 
     at_node := proc(var, args_node)
       local gb_loc;
       gb_loc := Groebner[Basis](op(args_node)):
-      print("Groebner basis for ", var, " is ", gb_loc);
+      #print("Groebner basis for ", var, " is ", gb_loc);
       gb_loc;
     end proc:
-    Grid[Setup]("local", numnodes = num_nodes):
-    Grid[Set](at_node):
-    gb := Grid[Seq](
-      at_node(theta_l[i], [
-        [op(Et_hat), z * Q_hat - 1, (theta_l[i] - subs(theta_hat, theta_l[i])) * w - 1],
+
+    if nops(theta_l) > 1 then
+      Grid[Setup]("local", numnodes = num_nodes):
+      Grid[Set](at_node):
+      gb := Grid[Seq](
+        at_node(theta_l[i], [
+          [op(Et_hat), z * Q_hat - 1, (theta_l[i] - subs(theta_hat, theta_l[i])) * w - 1],
+          tdeg(op(vars), z, w)
+        ]),
+        i = 1..nops(theta_l)
+      ):
+    else
+      # This is needed because of a bug in Grid[Seq]
+      gb := [ at_node(theta_l[1], [
+        [op(Et_hat), z * Q_hat - 1, (theta_l[1] - subs(theta_hat, theta_l[1])) * w - 1],
         tdeg(op(vars), z, w)
-      ]),
-      i = 1..nops(theta_l)
-    ):
+      ]) ]:
+    end if:
 
     for i from 1 to nops(theta_l) do
       if gb[i] = [1] then
